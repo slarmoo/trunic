@@ -1,4 +1,4 @@
-body {
+main {
     display: flex;
     flex-direction: row;
 }
@@ -21,6 +21,7 @@ body {
 
 #paragraphs {
     flex: 1;
+    padding: 4px;
 }
 
 .image {
@@ -38,7 +39,7 @@ body {
 }
 
 .span {
-    height: 22px;
+    height: 28px;
     display: inline-block;
     padding: 1px;
 }
