@@ -1,0 +1,48 @@
+body {
+    display: flex;
+    flex-direction: row;
+}
+
+.holder {
+    height: 100px;
+    border: 3px solid black;
+    margin: 2px;
+    display: flex;
+    flex-direction: row;
+}
+
+#runes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-right: 4px solid black;
+    flex: 1;
+    height: 100%;
+}
+
+#paragraphs {
+    flex: 1;
+}
+
+.image {
+    max-height: 100%;
+}
+
+.inputTest {
+    font-size: large;
+    width: 40px;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+}
+
+.span {
+    height: 22px;
+    display: inline-block;
+    padding: 1px;
+}
+
+.paragraph {
+    font-size: large;
+}
