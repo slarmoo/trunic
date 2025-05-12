@@ -1,3 +1,7 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+}
+
 main {
     display: flex;
     flex-direction: row;
@@ -46,4 +50,14 @@ main {
 
 .paragraph {
     font-size: large;
+}
+
+span.highlight {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+img.highlight {
+    filter: brightness(1.50);
+    border: 2px solid black;
 }
