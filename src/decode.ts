@@ -121,12 +121,19 @@ function createRuneViewers(sort: string): void {
         for (const val in uses) {
             createRuneViewer(uses[val]);
         }
-    } else if (sort = "dots") {
+    } else if (sort == "dots") {
         const hasDots: number[] = [];
         runeLinks.forEach((_, index: number) => { hasDots[index] = index });
         hasDots.sort((a: number, b: number) => +RuneHasDot[b] - +RuneHasDot[a]);
         for (const val in hasDots) {
             createRuneViewer(hasDots[val]);
+        }
+    } else if (sort == "solved") {
+        const isSolved: number[] = [];
+        runeLinks.forEach((_, index: number) => { isSolved[index] = index });
+        isSolved.sort((a: number, b: number) => +Boolean(runeTranslations[b]) - +Boolean(runeTranslations[a]));
+        for (const val in isSolved) {
+            createRuneViewer(isSolved[val]);
         }
     }
     for (let i: number = 0; i < occurrences.length; i++) {
