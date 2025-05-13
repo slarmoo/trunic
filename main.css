@@ -2,6 +2,15 @@ body {
     font-family: 'Times New Roman', Times, serif;
 }
 
+header {
+    display: flex;
+    flex-direction: row;
+}
+
+header > * {
+    margin-right: 5px;
+}
+
 main {
     display: flex;
     flex-direction: row;
@@ -57,7 +66,7 @@ span.highlight {
     text-decoration: underline;
 }
 
-img.highlight {
+.highlight > img, img.highlight {
     filter: brightness(1.50);
     border: 2px solid black;
 }

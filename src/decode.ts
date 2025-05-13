@@ -22,9 +22,9 @@ class Rune {
 
     toggleHighlight(): void {
         this.highlight = !this.highlight;
-        const runes = document.getElementsByClassName("rune" + this.thisNumber);
-        for (let i = 0; i < runes.length; i++) {
-            runes[i].classList.toggle("highlight", this.highlight);
+        const associatedRunes = document.getElementsByClassName("rune" + this.thisNumber);
+        for (let i = 0; i < associatedRunes.length; i++) {
+            associatedRunes[i].classList.toggle("highlight", this.highlight);
         }
     }
 }
@@ -58,6 +58,10 @@ sortBySelector.addEventListener("change", (event) => {
     createRuneViewers(self.value); localStorage.setItem('sort', self.value)
 });
 
+function createImageRune(index: number): HTMLImageElement {
+    return img({ width: 20, src: runeLinks[index], class: "image" });
+}
+
 function createRuneViewers(sort: string): void {
     const runeHolder: HTMLDivElement = document.getElementById("runes") as HTMLDivElement;
     runeHolder.innerHTML = ""; //empty it before remaking internals based on sorting method
@@ -78,7 +82,18 @@ function createRuneViewers(sort: string): void {
             const tg: HTMLInputElement = event.target as HTMLInputElement;
             runeTranslations[parseInt(tg.id)] = tg.value;
             localStorage.setItem("translation", JSON.stringify(runeTranslations));
-            updateParagraph(); //TODO: only update appropriate nodes
+            const associatedRunes = document.getElementsByClassName("rune" + parseInt(tg.id));
+            if (tg.value) {
+                for (let i = 0; i < associatedRunes.length; i++) {
+                    associatedRunes[i].innerHTML = tg.value;
+                }
+            } else {
+                for (let i = 0; i < associatedRunes.length; i++) {
+                    associatedRunes[i].innerHTML = "";
+                    const image = createImageRune(parseInt(tg.id));
+                    associatedRunes[i].appendChild(image);
+                }
+            }
         });
         //occurence
         const occurrence: HTMLSpanElement = span();
@@ -115,13 +130,11 @@ function createRuneViewers(sort: string): void {
         }
     }
     for (let i: number = 0; i < occurrences.length; i++) {
-        occurrences[i].innerText = ocmap.get(i) + " times,\n" + (Math.round(ocmap.get(i)! / TrunicText.length * 10000) / 100) + "%";
+        occurrences[i].innerText = ocmap.get(i) + " times,\n" + prettyPercent(ocmap.get(i)!, TrunicText.length);
     }
 }
 
-updateParagraph();
-
-function updateParagraph(): void {
+function updateParagraph(): Promise<string> {
     text.innerHTML = "";
 
     runes.forEach((_, index) => runes[index].childrenNodes = []);
@@ -130,13 +143,13 @@ function updateParagraph(): void {
         if (typeof TrunicText[i] == "number") {
             const runeIndex: number = TrunicText[i] as number;
             if (!runeTranslations[runeIndex]) {
-                const image = img({ width: 20, src: runeLinks[runeIndex], class: "image rune" + runeIndex });
+                const image = createImageRune(runeIndex);
                 runes[runeIndex].childrenNodes.push(image);
 
-                const imageWrapper = span({ class: "span" }, image);
+                const imageWrapper = span({ class: "runeText span rune" + runeIndex }, image);
                 text.appendChild(imageWrapper);
             } else {
-                const runeText = span({ class: "rune" + runeIndex }, runeTranslations[runeIndex]);
+                const runeText = span({ class: "runeText rune" + runeIndex }, runeTranslations[runeIndex]);
                 text.appendChild(runeText);
             }
         } else {
@@ -156,9 +169,43 @@ function updateParagraph(): void {
             }
         }
     }
+    return new Promise((resolve) => { resolve(""); });
 }
 
+
+updateParagraph()
+.then(() => {
+    const runeText = document.getElementsByClassName("runeText");
+    for (let i: number = 0; i < runeText.length; i++) {
+        let index: number = -1;
+        runeText[i].classList.forEach((value) => {
+            const int: number = parseInt(value.replace("rune", ""))
+            if (Number.isFinite(int)) {
+                index = int;
+                return;
+            }
+        })
+        runeText[i].addEventListener("mousedown", () => {
+            console.log(index, runes[index]);
+            runes[index].toggleHighlight();
+        });
+    }
+});
+
 document.getElementById("paragraphs")!.appendChild(text);
+
+let runesDecoded = 0;
+let percentDecoded = 0;
+let totalRunes = 0;
+runeTranslations.forEach((value, index) => {
+    totalRunes += ocmap.get(index)!;
+    if (value) {
+        runesDecoded++; 
+        percentDecoded += ocmap.get(index)!;
+    }
+});
+
+document.getElementById("percentDecoded")!.innerText = prettyPercent(runesDecoded, RuneCount) + ", " + prettyPercent(percentDecoded, totalRunes);
 
 function decimalToHex(decimal: number): string {
     const hexVals: string[] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
@@ -168,4 +215,8 @@ function decimalToHex(decimal: number): string {
         decimal = Math.floor(decimal / 16);
     }
     return "0x" + (hex.length < 2 ? "0" : "") + (hex.length < 1 ? "0" : "") + hex;
+    }
+
+function prettyPercent(numerator: number, denominator: number): string {
+    return (Math.round(numerator / denominator * 10000) / 100) + "%"
 }
