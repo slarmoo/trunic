@@ -28,13 +28,22 @@ main {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     border-right: 4px solid black;
-    flex: 1;
+    flex: 4;
     height: 100%;
 }
 
 #paragraphs {
-    flex: 1;
+    flex: 3;
     padding: 4px;
+}
+
+#userTranslations {
+    flex: 2;
+}
+
+textarea {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 20px;
 }
 
 .image {
@@ -69,4 +78,10 @@ span.highlight {
 .highlight > img, img.highlight {
     filter: brightness(1.50);
     border: 2px solid black;
+}
+
+.noselect {
+  -webkit-user-select: none; 
+  -ms-user-select: none; 
+  user-select: none; 
 }

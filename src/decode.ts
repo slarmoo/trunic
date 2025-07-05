@@ -58,6 +58,17 @@ sortBySelector.addEventListener("change", (event) => {
     createRuneViewers(self.value); localStorage.setItem('sort', self.value)
 });
 
+const savedUserTranslation: string | null = localStorage.getItem("userTranslation");
+const userTranslationTextArea: HTMLTextAreaElement | null = document.getElementById("textArea") as HTMLTextAreaElement;
+if (userTranslationTextArea != null) {
+    if (savedUserTranslation != null) {
+        userTranslationTextArea.value = savedUserTranslation;
+    }
+    userTranslationTextArea.addEventListener("change", () => {
+        localStorage.setItem("userTranslation", userTranslationTextArea.value);
+    })
+}
+
 function createImageRune(index: number): HTMLImageElement {
     return img({ width: 20, src: runeLinks[index], class: "image" });
 }
@@ -68,12 +79,13 @@ function createRuneViewers(sort: string): void {
 
     function createRuneViewer(index: number): void {
         //image
-        const rune: Rune = new Rune(img({
-            width: 100, src: runeLinks[index], class: "image rune" + index, title: decimalToHex(index),
-            style: "border-right: 3px solid black; margin-right: 3px"
-        }), index);
-
-        runes[index] = rune;
+        const rune: Rune = runes[index] || new Rune(img({
+                width: 100, src: runeLinks[index], class: "image rune" + index, title: decimalToHex(index),
+                style: "border-right: 3px solid black; margin-right: 3px"
+            }), index);
+        if (!runes[index]) {
+            runes[index] = rune;
+        } 
 
         //syllable input
         const translationGuess: HTMLInputElement = input({ type: "text", class: "inputTest", id: index, value: runeTranslations[index] || "" });
@@ -94,6 +106,7 @@ function createRuneViewers(sort: string): void {
                     associatedRunes[i].appendChild(image);
                 }
             }
+            amountDecoded();
         });
         //occurence
         const occurrence: HTMLSpanElement = span();
@@ -107,7 +120,7 @@ function createRuneViewers(sort: string): void {
         runeHolder.appendChild(runeBorder);
     }
     if (sort == "numerical") {
-        for (let i: number = 0; i < RuneCount; i++) {
+        for (let i: number = 0; i <= RuneCount; i++) {
             createRuneViewer(i);
         }
     } else if (sort == "uses") {
@@ -145,18 +158,20 @@ function updateParagraph(): Promise<string> {
     text.innerHTML = "";
 
     runes.forEach((_, index) => runes[index].childrenNodes = []);
+    console.log(decimalToHex(RuneCount), runes)
 
     for (let i: number = 0; i < TrunicText.length; i++) {
         if (typeof TrunicText[i] == "number") {
             const runeIndex: number = TrunicText[i] as number;
             if (!runeTranslations[runeIndex]) {
                 const image = createImageRune(runeIndex);
+                console.log(decimalToHex(runeIndex))
                 runes[runeIndex].childrenNodes.push(image);
 
-                const imageWrapper = span({ class: "runeText span rune" + runeIndex }, image);
+                const imageWrapper = span({ class: "runeText noselect span rune" + runeIndex }, image);
                 text.appendChild(imageWrapper);
             } else {
-                const runeText = span({ class: "runeText rune" + runeIndex }, runeTranslations[runeIndex]);
+                const runeText = span({ class: "runeText noselect rune" + runeIndex }, runeTranslations[runeIndex]);
                 text.appendChild(runeText);
             }
         } else {
@@ -170,7 +185,7 @@ function updateParagraph(): Promise<string> {
             } else {
                 text.innerHTML += textSnippet;
                 if (textSnippet + "".includes(" ")) { //create enough space
-                    const space: HTMLSpanElement = span({style: "padding: 3px"});
+                    const space: HTMLSpanElement = span({ style: "padding: 3px", class: "noselect"});
                     text.appendChild(space);
                 }
             }
@@ -193,27 +208,29 @@ updateParagraph()
             }
         })
         runeText[i].addEventListener("mousedown", () => {
-            console.log(index, runes[index]);
             runes[index].toggleHighlight();
         });
     }
 });
 
-document.getElementById("paragraphs")!.appendChild(text);
+amountDecoded();
+function amountDecoded() {
+    document.getElementById("paragraphs")!.appendChild(text);
 
-let runesDecoded = 0;
-let percentDecoded = 0;
-let totalRunes = 0;
-runeTranslations.forEach((value, index) => {
-    totalRunes += ocmap.get(index)!;
-    if (value) {
-        runesDecoded++; 
-        percentDecoded += ocmap.get(index)!;
-    }
-});
+    let runesDecoded = 0;
+    let percentDecoded = 0;
+    let totalRunes = 0;
+    runeTranslations.forEach((value, index) => {
+        totalRunes += ocmap.get(index)!;
+        if (value) {
+            runesDecoded++;
+            percentDecoded += ocmap.get(index)!;
+        }
+    });
 
-document.getElementById("percentDecoded")!.innerText = prettyPercent(runesDecoded, RuneCount) + ", " + prettyPercent(percentDecoded, totalRunes);
-
+    document.getElementById("percentDecoded")!.innerText = prettyPercent(runesDecoded, RuneCount) + ", " + prettyPercent(percentDecoded, totalRunes);
+}
+    
 function decimalToHex(decimal: number): string {
     const hexVals: string[] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
     let hex: string = "";
